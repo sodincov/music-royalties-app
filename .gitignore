@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.env
+.env.local
+
+# Excel / данные
+*.xlsx
+*.csv
+
+# IDE
+.idea/
+.vscode/
+
+# Node.js (когда добавишь фронт)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
