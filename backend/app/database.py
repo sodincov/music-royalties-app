@@ -2,11 +2,18 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from app.settings import settings
+import os
 
+# Отладка
+print("=== DEBUG ===")
+print("ENV DATABASE_URL:", repr(os.getenv("DATABASE_URL")))
+print("=== END DEBUG ===")
+
+# Преобразуем URL
 database_url = settings.DATABASE_URL
-if database_url.startswith("postgres://"):
+if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
-if database_url.startswith("postgresql://"):
+if database_url and database_url.startswith("postgresql://"):
     database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 engine = create_async_engine(database_url, echo=True)
