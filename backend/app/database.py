@@ -1,31 +1,20 @@
 from typing import Annotated
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
 from app.settings import settings
-import os
 
-# Отладка
-print("=== DEBUG ===")
-print("ENV DATABASE_URL:", repr(os.getenv("DATABASE_URL")))
-print("=== END DEBUG ===")
+# Создаём синхронный движок
+engine = create_engine(settings.DATABASE_URL, echo=True)
 
-# Преобразуем URL
-database_url = settings.DATABASE_URL
-if database_url and database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
-if database_url and database_url.startswith("postgresql://"):
-    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+# Сессия
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-engine = create_async_engine(database_url, echo=True)
+def get_session() -> Session:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-AsyncSessionLocal = async_sessionmaker(
-    bind=engine, class_=AsyncSession, expire_on_commit=False
-)
-
-async def get_session() -> AsyncSession:
-    async with AsyncSessionLocal() as session:
-        yield session
-
-DBSessionDep = Annotated[AsyncSession, Depends(get_session)]
-
-
+DBSessionDep = Annotated[Session, Depends(get_session)]
